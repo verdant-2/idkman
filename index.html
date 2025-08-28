@@ -275,21 +275,11 @@
             addTab();
         }
     });
-
-    searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            const query = searchInput.value.trim();
-            const url = (query.includes('.') && !query.includes(' ')) ? query : `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
-            showBrowser();
-            if (tabs.length === 0) {
-                addTab(url, true);
-            } else {
-                const tab = tabs.find(t => t.id === activeTabId);
-                tab.url = url;
-                loadContent(tab);
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadUrl(this.value);
             }
-        }
-    });
+        });
 
     browserUrlBar.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') navigateToAddress();
@@ -326,4 +316,5 @@
 </script>
 
 </body>
+
 </html>
