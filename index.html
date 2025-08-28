@@ -275,11 +275,10 @@
             addTab();
         }
     });
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                loadUrl(this.value);
-            }
-        });
+        
+        searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') navigateToAddress();
+    });
 
     browserUrlBar.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') navigateToAddress();
@@ -318,3 +317,4 @@
 </body>
 
 </html>
+
