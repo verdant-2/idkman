@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verdant</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="https://ik.imagekit.io/7krb4a8ap/76deab65-6483-4a91-8645-48ba0a4d5e82-removebg-preview.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,7 +71,7 @@
         <div class="relative flex-grow h-screen">
             <main id="search-content" class="flex flex-col items-center justify-center h-full w-full z-20 transition-opacity duration-300">
                 <h1 class="text-8xl font-bold tracking-tight text-green-400 text-shadow">Verdant</h1>
-                <p class="text-xl text-white mt-2 mb-8 text-shadow">Get ready for big updates...</p>
+                <p class="text-xl text-white mt-2 mb-8 text-shadow">PROXXXYYY FULLY UPDATED WOOOOOOOO</p>
                 <div class="bg-black/50 w-full max-w-lg rounded-full flex items-center px-5 py-3 shadow-lg mb-8 border border-white/10">
                     <i class="fa-solid fa-magnifying-glass text-gray-400 mr-4"></i>
                     <input id="search-input" type="text" placeholder="Browse freely." class="w-full bg-transparent focus:outline-none text-lg">
@@ -131,6 +132,8 @@
     const homeLogoLink = document.getElementById('home-logo-link');
     const homeIconLink = document.getElementById('home-icon-link');
 
+    window.alert("Make sure to add https:// to the start of your link. For example, add https:// to tiktok. https://tiktok.com")
+        
     let tabs = [];
     let activeTabId = null;
 
@@ -275,10 +278,39 @@
             addTab();
         }
     });
+
+    searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        let query = searchInput.value.trim();
         
-        searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') navigateToAddress();
-    });
+        const isURL = query.includes('.') && !query.includes(' ');
+
+        let url;
+        if (isURL) {
+
+            if (!query.startsWith('http://') && !query.startsWith('https://')) {
+                url = 'https://' + query;
+            } else {
+                url = query;
+            }
+        } else {
+
+            url = `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
+        }
+
+        showBrowser();
+        if (tabs.length === 0) {
+            addTab(url, true);
+        } else {
+            const tab = tabs.find(t => t.id === activeTabId);
+            if (tab) {
+                tab.url = url;
+                loadContent(tab);
+            }
+        }
+    }
+});
+
 
     browserUrlBar.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') navigateToAddress();
@@ -315,6 +347,4 @@
 </script>
 
 </body>
-
 </html>
-
