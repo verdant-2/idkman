@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verdant AI Chat</title>
+    <link rel="icon" href="https://ik.imagekit.io/7krb4a8ap/76deab65-6483-4a91-8645-48ba0a4d5e82-removebg-preview.png" sizes="144x144">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap');
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #171717;
+            color: #e5e5e5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            flex-shrink: 0;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 2rem;
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            border-radius: 0;
+            overflow-y: auto;
+            background-color: #262626;
+            box-shadow: none;
+            min-height: 0;
+            position: relative;
+        }
+
+        #welcome-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #262626;
+            transition: opacity 0.7s ease-out;
+            z-index: 10;
+            pointer-events: auto;
+            opacity: 1;
+        }
+
+        .welcome-image {
+            width: 180px;
+            height: auto;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.6));
+        }
+
+        .welcome-title {
+            font-size: 4.5rem;
+            font-weight: 800;
+            color: #059669;
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.7);
+            margin-bottom: 1.5rem;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.5rem;
+            color: #a3a3a3;
+            text-align: center;
+            max-width: 70%;
+            line-height: 1.6;
+        }
+
+        .chat-message {
+            margin-bottom: 1rem;
+            max-width: 75%;
+            word-wrap: break-word;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .user-message {
+            background-color: #059669;
+            align-self: flex-end;
+            color: white;
+            padding: 0.85rem 1.25rem;
+            border-radius: 1.25rem;
+            border-bottom-right-radius: 0.5rem;
+            margin-left: auto;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            margin-right: auto;
+            padding: 0;
+            box-shadow: none;
+            background-color: transparent;
+            border-radius: 0;
+            max-width: 100%;
+        }
+
+        .ai-message-content-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex-grow: 1;
+            padding-bottom: 0;
+        }
+
+        .ai-text-content {
+            color: #d4d4d4;
+            padding: 0;
+            background-color: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            display: block;
+            margin-bottom: 0;
+        }
+
+        .ai-code-block {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.95em;
+            background-color: #1f1f1f;
+            color: #e5e5e5;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-top: 0.5rem;
+            display: block;
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 1rem;
+            padding: 1.25rem 2rem;
+            margin-top: 0;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: #262626;
+            border: none;
+            box-shadow: none;
+            align-items: center;
+            width: 100%;
+            max-width: none;
+            border-radius: 0;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            padding: 1rem 1.25rem;
+            border-radius: 0.75rem;
+            border: 1px solid #065f46;
+            background-color: transparent;
+            color: #e5e5e5;
+            outline: none;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+        }
+
+        .send-button {
+            background-color: #059669;
+            color: white;
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            font-weight: 700;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .send-button:hover {
+            background-color: #047857;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .send-button svg {
+            width: 1.5rem;
+            height: 1.5rem;
+            stroke: currentColor;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #10b981;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            flex-shrink: 0;
+            padding-top: 2rem;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .ai-thinking-message {
+            align-self: flex-start;
+            margin-right: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            color: #a3a3a3;
+            font-style: italic;
+        }
+
+        .ai-thinking-message .thinking-image {
+            width: 24px;
+            height: 24px;
+            animation: pulse 1.5s infinite ease-in-out;
+            filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.5));
+        }
+
+        .ai-thinking-message .thinking-text {
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+    </style>
+</head>
+<body class="bg-neutral-900 text-neutral-200 flex flex-col min-h-screen">
+
+    <header class="p-4 md:p-6 flex justify-between items-center border-b border-neutral-700">
+        <a href="index.html" id="home-link" class="text-lg md:text-xl font-bold text-emerald-300 hover:text-emerald-400 transition-colors duration-200">
+            Verdant
+        </a>
+        <nav>
+            <ul class="flex space-x-4 md:space-x-8 text-neutral-300 text-sm md:text-base">
+                <li><a href="games.html" class="hover:text-emerald-400 transition-colors duration-200">Games</a></li>
+                <li><a href="apps.html" class="hover:text-emerald-400 transition-colors duration-200">Apps</a></li>
+                <li><a href="movies.html" class="hover:text-emerald-400 transition-colors duration-200">Movies</a></li>
+                <li><a href="ai.html" class="hover:text-emerald-400 transition-colors duration-200">AI Chat</a></li>
+                <li><a href="settings.html" class="hover:text-emerald-400 transition-colors duration-200">Settings</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div id="chat-messages" class="chat-container">
+            <div id="welcome-overlay">
+                <img src="https://ik.imagekit.io/7krb4a8ap/76deab65-6483-4a91-8645-48ba0a4d5e82-removebg-preview.png"
+                     alt="Verdant Sprout Logo"
+                     class="welcome-image">
+                <h1 class="welcome-title">Verdant AI</h1>
+                <p class="welcome-subtitle">Welcome! I'm here to assist you. Feel free to ask me anything.</p>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="user-input" placeholder="Type your message..." class="chat-input" autofocus>
+            <button id="send-button" class="send-button">
+                <svg id="send-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                </svg>
+                <div id="loading-spinner" class="loading-spinner"></div>
+            </button>
+        </div>
+    </main>
+
+    <footer class="p-4 md:p-6 flex justify-between items-center text-xs md:text-sm text-neutral-400 border-t border-neutral-700 mt-auto">
+        <div class="flex items-center">
+            &copy; 2025 Verdant
+        </div>
+        <div class="space-x-4 md:space-x-8">
+            <a href="https://discord.gg/X2wEEbGtXK" class="hover:text-emerald-400 transition-colors duration-200">Discord</a>
+            <a href="#" class="hover:text-emerald-400 transition-colors duration-200">FAQ</a>
+        </div>
+    </footer>
+
+    <script>
+        const chatMessagesDiv = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const sendIcon = document.getElementById('send-icon');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const homeLink = document.getElementById('home-link');
+        const welcomeOverlay = document.getElementById('welcome-overlay');
+
+        let chatHistory = [];
+        let welcomeDismissed = false;
+        let thinkingMessageElement = null;
+
+        function appendMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+
+            if (sender === 'ai') {
+                const codeBlockDelimiter = '```';
+                const parts = text.split(new RegExp(codeBlockDelimiter, 'g'));
+                let currentFragment = document.createDocumentFragment();
+
+                const contentGroup = document.createElement('div');
+                contentGroup.classList.add('ai-message-content-group');
+
+                for (let i = 0; i < parts.length; i++) {
+                    if (i % 2 === 0) {
+                        if (parts[i].trim()) {
+                            const p = document.createElement('p');
+                            p.classList.add('ai-text-content');
+                            p.textContent = parts[i].trim();
+                            contentGroup.appendChild(p);
+                        }
+                    } else {
+                        const codeContent = parts[i];
+                        let actualCode = codeContent;
+                        let language = 'plaintext';
+
+                        const newLineIndex = codeContent.indexOf('\n');
+                        if (newLineIndex > -1) {
+                            const potentialLanguage = codeContent.substring(0, newLineIndex).trim();
+                            if (potentialLanguage.length > 0 && !potentialLanguage.includes(' ') && potentialLanguage.length < 20) {
+                                language = potentialLanguage;
+                                actualCode = codeContent.substring(newLineIndex + 1);
+                            }
+                        }
+
+                        const pre = document.createElement('pre');
+                        const code = document.createElement('code');
+                        code.classList.add(
+                            'ai-code-block',
+                            `language-${language}`
+                        );
+                        code.textContent = actualCode.trim();
+                        pre.appendChild(code);
+                        contentGroup.appendChild(pre);
+                    }
+                }
+                messageDiv.appendChild(contentGroup);
+            } else {
+                messageDiv.textContent = text;
+            }
+
+            chatMessagesDiv.appendChild(messageDiv);
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const prompt = userInput.value.trim();
+            if (!prompt) return;
+
+            appendMessage(prompt, 'user');
+            userInput.value = '';
+
+            sendIcon.style.opacity = '0';
+            loadingSpinner.style.display = 'block';
+            sendButton.disabled = true;
+            userInput.disabled = true;
+
+            thinkingMessageElement = document.createElement('div');
+            thinkingMessageElement.classList.add('ai-thinking-message');
+            thinkingMessageElement.innerHTML = `
+                <img src="[https://ik.imagekit.io/7krb4a8ap/76deab65-6483-4a91-8645-48ba0a4d5e82-removebg-preview.png](https://ik.imagekit.io/7krb4a8ap/76deab65-6483-4a91-8645-48ba0a4d5e82-removebg-preview.png)"
+                     alt="Verdant AI Thinking"
+                     class="thinking-image">
+                <span class="thinking-text">Verdant AI is thinking...</span>
+            `;
+            chatMessagesDiv.appendChild(thinkingMessageElement);
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+
+            if (!welcomeDismissed) {
+                welcomeOverlay.classList.add('opacity-0');
+
+                setTimeout(async () => {
+                    welcomeOverlay.style.display = 'none';
+                    welcomeDismissed = true;
+                    await callGeminiAPI(prompt);
+                }, 700);
+            } else {
+                await callGeminiAPI(prompt);
+            }
+        }
+
+        async function callGeminiAPI(currentPrompt) {
+            chatHistory.push({ role: "user", parts: [{ text: currentPrompt }] });
+
+            const payload = {
+                contents: chatHistory
+            };
+
+            const apiKey = "AIzaSyCp3L0ja4eOJRgun9wdgmdDsW2WbjvAnjc";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const aiText = result.candidates[0].content.parts[0].text;
+                    appendMessage(aiText, 'ai');
+                    chatHistory.push({ role: "model", parts: [{ text: aiText }] });
+                } else {
+                    console.error("AI response structure unexpected:", result);
+                    if (result.error && result.error.message.includes("API key not valid")) {
+                        appendMessage("Error: AI could not respond. Please ensure your Gemini API key is correct and valid.", 'ai');
+                    } else {
+                        appendMessage("Error: AI could not respond. Please try again later.", 'ai');
+                    }
+                }
+            } catch (error) {
+                console.error("Error communicating with Gemini API:", error);
+                appendMessage("Error: Failed to connect to the AI. Please check your internet connection or try again later.", 'ai');
+            } finally {
+                if (thinkingMessageElement && thinkingMessageElement.parentNode) {
+                    thinkingMessageElement.parentNode.removeChild(thinkingMessageElement);
+                    thinkingMessageElement = null;
+                }
+
+                sendIcon.style.opacity = '1';
+                loadingSpinner.style.display = 'none';
+                sendButton.disabled = false;
+                userInput.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        homeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.assign(window.location.origin + '/index.html');
+        });
+    </script>
+</body>
+</html>
